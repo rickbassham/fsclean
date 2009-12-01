@@ -35,6 +35,7 @@ namespace fsclean
             TimeSpan maxAgeToKeep = TimeSpan.MaxValue;
             List<Regex> filesToIgnore = new List<Regex>();
             string logPath = null;
+            bool quiet = false;
 
             foreach (string arg in args)
             {
@@ -70,6 +71,17 @@ namespace fsclean
                 {
                     logPath = arg.Substring(3);
                 }
+                else if (arg == "-q" || arg == "--quiet")
+                {
+                    quiet = true;
+                }
+            }
+
+            if (!quiet)
+            {
+                Console.WriteLine("fsclean - Cleans up files on the filesystem.");
+                Console.WriteLine("Copyright (C) 2009 Brodrick E. Bassham, Jr.");
+                Console.WriteLine();
             }
 
             if (!string.IsNullOrEmpty(logPath))
@@ -86,11 +98,14 @@ namespace fsclean
             }
 
             RecursiveDelete(path, deleteEmptyDir, maxAgeToKeep, filesToIgnore);
+
+            Trace.Flush();
+            Trace.Close();
         }
 
         private static void PrintUsage()
         {
-            throw new Exception("The method or operation is not implemented.");
+            Console.WriteLine("Usage: fsclean.exe -p:<path> -a:<maxAgeToKeep> [-l:<logPath>] [-i:<ignoreRegex>] [--quiet|-q]");
         }
 
         private static TimeSpan GetTimeSpanFromArg(string arg)
