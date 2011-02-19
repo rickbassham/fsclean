@@ -149,12 +149,12 @@ namespace fsclean
 
         private static void RecursiveDelete(string path, bool deleteEmptyDir, TimeSpan maxAgeToKeep, List<Regex> filesToIgnore)
         {
-            foreach (string dir in Directory.GetDirectories(path))
+            foreach (string dir in Directory.EnumerateDirectories(path))
             {
                 RecursiveDelete(dir, deleteEmptyDir, maxAgeToKeep, filesToIgnore);
             }
 
-            foreach (string file in Directory.GetFiles(path))
+            foreach (string file in Directory.EnumerateFiles(path))
             {
                 if ((File.GetLastWriteTime(file) + maxAgeToKeep) < DateTime.Now)
                 {
@@ -176,22 +176,27 @@ namespace fsclean
                 }
             }
 
-            if (Directory.GetFileSystemEntries(path).Length == 0 && deleteEmptyDir)
+            if (deleteEmptyDir)
             {
-                bool ignore = false;
+                string[] remaining = Directory.GetFileSystemEntries(path);
 
-                foreach (Regex r in filesToIgnore)
+                if (remaining.Length == 0)
                 {
-                    if (r.IsMatch(path))
+                    bool ignore = false;
+
+                    foreach (Regex r in filesToIgnore)
                     {
-                        ignore = true;
-                        break;
+                        if (r.IsMatch(path))
+                        {
+                            ignore = true;
+                            break;
+                        }
                     }
-                }
 
-                if (!ignore)
-                {
-                    DeleteDirectory(path);
+                    if (!ignore)
+                    {
+                        DeleteDirectory(path);
+                    }
                 }
             }
         }
